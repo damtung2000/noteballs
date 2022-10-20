@@ -1,39 +1,76 @@
 import { defineStore } from 'pinia';
+import { db } from '../helpers/firebase';
+import {
+  collection,
+  onSnapshot,
+  doc,
+  deleteDoc,
+  updateDoc,
+  query,
+  orderBy,
+  addDoc,
+} from 'firebase/firestore';
+import { useStoreAuth } from '@/stores/storeAuth';
+
+let notesCollectionRef;
+let notesCollectionQuery;
+let getNotesSnapshot = null;
 
 export const useNotesStore = defineStore('storeNotes', {
   state: () => {
     return {
-      notes: [
-        {
-          id: 'id1',
-          content:
-            'Lorem, ipsum dolor sit amet consectetur adipisicing elit. Minus omnis explicabo ad deserunt accusamus libero voluptas animi optio esse nemo dignissimos, ipsam amet, asperiores quod iusto. Eos quos ratione nemo.',
-        },
-        {
-          id: 'id2',
-          content: 'Short Note',
-        },
-      ],
+      notes: [],
+      notesLoaded: false,
     };
   },
   actions: {
-    addNote(newNoteContent) {
+    init() {
+      //initialize database refs
+      const storeAuth = useStoreAuth();
+
+      notesCollectionRef = collection(db, 'USERS', storeAuth.user.uid, 'NOTES');
+      notesCollectionQuery = query(notesCollectionRef, orderBy('date', 'desc'));
+      this.getNotes();
+    },
+    clearNotes() {
+      this.notes = [];
+      if (getNotesSnapshot) {
+        //unsubscribe from any active listener
+        getNotesSnapshot();
+      }
+    },
+    async getNotes() {
+      this.notesLoaded = false;
+      getNotesSnapshot = onSnapshot(notesCollectionQuery, (querySnapshot) => {
+        const notes = [];
+        querySnapshot.forEach((doc) => {
+          const note = {
+            id: doc.id,
+            content: doc.data().content,
+            date: doc.data().date,
+          };
+          notes.push(note);
+        });
+        this.notes = notes;
+        this.notesLoaded = true;
+      });
+    },
+    async addNote(newNoteContent) {
       const currentDate = new Date().getTime();
-      const id = currentDate.toString();
+      const dateString = currentDate.toString();
 
-      const note = {
-        id,
+      await addDoc(notesCollectionRef, {
         content: newNoteContent,
-      };
-
-      this.notes.unshift(note);
+        date: dateString,
+      });
     },
-    deleteNote(noteId) {
-      this.notes = this.notes.filter((note) => note.id !== noteId);
+    async deleteNote(noteId) {
+      await deleteDoc(doc(notesCollectionRef, noteId));
     },
-    updateNote(id, content) {
-      const index = this.notes.findIndex((note) => note.id === id);
-      this.notes[index].content = content;
+    async updateNote(id, content) {
+      await updateDoc(doc(notesCollectionRef, id), {
+        content,
+      });
     },
   },
   getters: {

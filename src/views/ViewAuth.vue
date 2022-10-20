@@ -33,13 +33,15 @@
                 <input
                   v-model="credentials.password"
                   class="input"
-                  type="email"
+                  type="password"
                   placeholder="Password" />
               </div>
             </div>
             <div class="field is-grouped is-grouped-right">
               <p class="control">
-                <a class="button is-primary">{{ formTitle }}</a>
+                <button class="button is-primary" type="sumbit">
+                  {{ formTitle }}
+                </button>
               </p>
             </div>
           </form>
@@ -51,6 +53,7 @@
 
 <script setup>
   import { computed, ref, reactive } from 'vue';
+  import { useStoreAuth } from '@/stores/storeAuth';
 
   const register = ref(false);
   const formTitle = computed(() => (register.value ? 'Register' : 'Login'));
@@ -60,6 +63,9 @@
     email: '',
     password: '',
   });
+
+  const storeAuth = useStoreAuth();
+
   //submit
   function onSubmit() {
     if (!credentials.email || !credentials.password) {
@@ -67,9 +73,9 @@
       return;
     }
     if (register.value) {
-      console.log('Register', credentials.email);
+      storeAuth.registerUser(credentials);
     } else {
-      console.log('Login', credentials.email);
+      storeAuth.loginUser(credentials);
     }
   }
 </script>
