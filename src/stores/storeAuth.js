@@ -30,7 +30,6 @@ export const useStoreAuth = defineStore('storeAuth', {
           this.user = {};
           this.router.replace('/auth');
           storeNotes.clearNotes();
-          console.log('User logged out: ', user.email);
         }
       });
     },
