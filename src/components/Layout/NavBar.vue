@@ -31,7 +31,7 @@
             Log Out {{ storeAuth.user.email }}
           </button>
         </div>
-        <div class="navbar-end">
+        <div class="navbar-end" v-if="storeAuth.user.uid">
           <RouterLink
             @click="showMobileNav = false"
             to="/"
