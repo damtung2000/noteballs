@@ -36,6 +36,9 @@
                   type="password"
                   placeholder="Password" />
               </div>
+              <p v-if="error" class="help is-danger">
+                Password must be at least 6 characters
+              </p>
             </div>
             <div class="field is-grouped is-grouped-right">
               <p v-if="!register" class="control">
@@ -59,9 +62,14 @@
 </template>
 
 <script setup>
-  import { computed, ref, reactive } from 'vue';
+  import { computed, ref, reactive, watch } from 'vue';
   import { useStoreAuth } from '@/stores/storeAuth';
+  import {
+    MINIMUM_PASSWORD_LENGTH,
+    TEST_CREDENTIALS,
+  } from '../helpers/constants';
 
+  const error = ref(false);
   const register = ref(false);
   const formTitle = computed(() => (register.value ? 'Register' : 'Login'));
 
@@ -79,6 +87,10 @@
       alert('Please enter email and password');
       return;
     }
+    if (credentials.password.length < MINIMUM_PASSWORD_LENGTH) {
+      error.value = true;
+      return;
+    }
     if (register.value) {
       storeAuth.registerUser(credentials);
     } else {
@@ -88,11 +100,15 @@
 
   function loginTestUser() {
     const credentials = {
-      email: 'test@test.com',
-      password: 'testing123',
+      email: TEST_CREDENTIALS.email,
+      password: TEST_CREDENTIALS.password,
     };
     storeAuth.loginUser(credentials);
   }
+
+  watch(credentials, () => {
+    error.value = false;
+  });
 </script>
 
 <style>
