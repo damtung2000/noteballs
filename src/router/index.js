@@ -37,7 +37,6 @@ const router = createRouter({
 router.beforeEach(async (to, from) => {
   const storeAuth = useStoreAuth();
   if (!storeAuth.user.uid && to.name !== 'auth') {
-    alert('Please login or register');
     return { name: 'auth' };
   }
 
