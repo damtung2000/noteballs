@@ -38,6 +38,13 @@
               </div>
             </div>
             <div class="field is-grouped is-grouped-right">
+              <p v-if="!register" class="control">
+                <button
+                  @click.prevent="loginTestUser"
+                  class="button is-primary">
+                  Login with Test User
+                </button>
+              </p>
               <p class="control">
                 <button class="button is-primary" type="sumbit">
                   {{ formTitle }}
@@ -77,6 +84,14 @@
     } else {
       storeAuth.loginUser(credentials);
     }
+  }
+
+  function loginTestUser() {
+    const credentials = {
+      email: 'test@test.com',
+      password: 'testing123',
+    };
+    storeAuth.loginUser(credentials);
   }
 </script>
 
